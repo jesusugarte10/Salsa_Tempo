@@ -3,6 +3,15 @@ import numpy as np
 import librosa
 import time
 
+salsa_figures = [
+    {"name": "Sombrero", "count": 16},
+    {"name": "Kentucky", "count": 24},
+    {"name": "Dile que no", "count": 8},
+    {"name": "Enchufla", "count": 16},
+    {"name": "Adios con la vecina", "count": 16},
+    # Add more salsa figures as needed
+]
+
 # Load the audio file
 file_path = "C:\\Users\\jesus\\OneDrive\\Escritorio\\Salsa\\songs\\fuga.wav"
 y, sample_rate = librosa.load(file_path, sr=None)  # sr=None to use the file's original sample rate
