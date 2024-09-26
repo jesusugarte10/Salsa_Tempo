@@ -7,20 +7,55 @@ from gtts import gTTS
 from playsound import playsound
 import os
 import pygame
-from salsa_figures import salsa_figures
+from figures.salsa_figures import salsa_figures
+import json
+import pickle  # For saving binary data efficiently
+
+songName = "medicen"
 
 # Initialize pygame mixer for sound playback
 pygame.mixer.init()
 
-# Load the audio file
-file_path = "C:\\Users\\jesus\\OneDrive\\Escritorio\\Salsa\\songs\\medicen.wav"
-y, sample_rate = librosa.load(file_path, sr=None)  # sr=None to use the file's original sample rate
+# Create a relative path based on the current working directory (pwd)
+base_folder = os.path.join(os.getcwd(), "Salsa_Tempo")
 
-# Preprocess: Get the tempo and beats beforehand
-tempo, beats = librosa.beat.beat_track(y=y, sr=sample_rate)
+# Function to load audio and metadata
+def load_audio_and_metadata(file_path, metadata_path):
+    if os.path.exists(metadata_path):
+        # Load metadata from file (to avoid preprocessing)
+        with open(metadata_path, 'rb') as f:
+            metadata = pickle.load(f)
+        print("Metadata loaded from cache.")
+        y, sample_rate = metadata['y'], metadata['sample_rate']
+        tempo, beats, beat_times = metadata['tempo'], metadata['beats'], metadata['beat_times']
+    else:
+        # Process audio and extract metadata
+        y, sample_rate = librosa.load(file_path, sr=None)
+        tempo, beats = librosa.beat.beat_track(y=y, sr=sample_rate)
+        beat_times = librosa.frames_to_time(beats, sr=sample_rate)
 
-# Convert beat frames to time in seconds
-beat_times = librosa.frames_to_time(beats, sr=sample_rate)
+        # Save metadata to a file for future use
+        metadata = {
+            'y': y,
+            'sample_rate': sample_rate,
+            'tempo': tempo,
+            'beats': beats,
+            'beat_times': beat_times
+        }
+        with open(metadata_path, 'wb') as f:
+            pickle.dump(metadata, f)
+        print("Metadata processed and saved.")
+
+    return y, sample_rate, tempo, beats, beat_times
+
+
+# Set file paths
+file_path = os.path.join(base_folder, "songs", "raw_audio", f"{songName}.wav")
+metadata_path = os.path.join(base_folder, "songs", "metadata", f"{songName}_metadata.pkl")
+
+# Load audio and metadata (from cache or freshly)
+y, sample_rate, tempo, beats, beat_times = load_audio_and_metadata(file_path, metadata_path)
+
 
 # Initialize variables for beat detection
 beat_detected = False
@@ -60,8 +95,7 @@ def calculate_beat_interval_and_threshold(current_time):
 
 def announce_figure(figure_name):
     # Create or load the TTS audio file for the figure name
-    folder_path = "C:\\Users\\jesus\\OneDrive\\Escritorio\\Salsa\\TTS_Files\\"
-    tts_file = f"{folder_path}{figure_name}.mp3"
+    tts_file = os.path.join(base_folder, "figures", "figures_audio", "computer_generated", f"{figure_name}.mp3")
 
     # Check if the TTS file already exists, else generate it
     if not os.path.exists(tts_file):
