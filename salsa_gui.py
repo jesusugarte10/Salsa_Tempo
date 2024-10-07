@@ -24,7 +24,6 @@ def download_youtube_audio(url, output_folder):
             'preferredcodec': 'wav',
             'preferredquality': '192',
         }],
-        'ffmpeg_location': r"c:\\Users\\jesus\AppData\\Local\\Microsoft\\WinGet\\Packages\\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\\ffmpeg-7.1-full_build\bin\\ffmpeg.exe"  # Adjust the path if necessary
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:

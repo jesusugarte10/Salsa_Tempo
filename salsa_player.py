@@ -50,9 +50,7 @@ def announce_figure(figure_name):
     # Get the current music volume (between 0.0 and 1.0)
     current_volume = pygame.mixer.music.get_volume()
 
-    # Set TTS volume (increase it relative to current music volume)
-    # For example, increase by 20% (0.2), ensuring it doesn't exceed 1.0
-    tts_volume = min(current_volume + 0.2, 1.0)
+    tts_volume = 4.0
 
     # Set the volume for the TTS audio
     pygame.mixer.music.set_volume(tts_volume)
@@ -95,7 +93,7 @@ def play_audio(file_path, metadata_path):
         nonlocal current_index, beat_counter, beats_since_last_figure, figure_in_progress, current_group
 
         chunk_data = y[current_index:current_index + frames] if current_index + frames <= audio_len else np.zeros(frames)
-        outdata[:, 0] = chunk_data
+        outdata[:, 0] = chunk_data * 0.5 # Apply the volume reduction
         current_index += frames
         if current_index >= audio_len:
             current_index = 0
@@ -123,6 +121,8 @@ def play_audio(file_path, metadata_path):
                     figure_in_progress = random.choice(salsa_figures[current_group]).copy()
                 if figure_in_progress:
                     announce_figure(figure_in_progress['name'])
+                    print(figure_in_progress['name'])
+                    print()
 
     # Set up and start the audio stream
     stream = sd.OutputStream(channels=1, samplerate=sample_rate, callback=audio_callback)
