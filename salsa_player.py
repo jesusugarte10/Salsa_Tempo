@@ -46,7 +46,20 @@ def announce_figure(figure_name):
         tts = gTTS(text=figure_name, lang='es', slow=False)
         tts.save(tts_file)
     pygame.mixer.music.load(tts_file)
+
+    # Get the current music volume (between 0.0 and 1.0)
+    current_volume = pygame.mixer.music.get_volume()
+
+    # Set TTS volume (increase it relative to current music volume)
+    # For example, increase by 20% (0.2), ensuring it doesn't exceed 1.0
+    tts_volume = min(current_volume + 0.2, 1.0)
+
+    # Set the volume for the TTS audio
+    pygame.mixer.music.set_volume(tts_volume)
+
     pygame.mixer.music.play()
+
+    pygame.mixer.music.set_volume(current_volume)
 
 # Function to switch salsa figure groups
 def switch_group(current_group):
