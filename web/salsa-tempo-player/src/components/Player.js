@@ -51,6 +51,8 @@ const Player = () => {
 
   return (
     <div style={styles.container}>
+      <h1 style={styles.title}>Salsa Rueda App</h1>
+
       <form onSubmit={handleSearch} style={styles.form}>
         <input
           type="text"
@@ -95,6 +97,11 @@ const Player = () => {
           <button onClick={playAudio}>Play Audio</button>
         </div>
       )}
+
+      <footer style={styles.footer}>
+        <img src="https://avatars.githubusercontent.com/u/19676534?v=4" alt="Logo" style={styles.logo} /> {/* Round Image */}
+        <span>Made with Love by Jesus Ugarte</span>
+      </footer>
     </div>
   );
 };
@@ -104,9 +111,14 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center', // Center horizontally
-    justifyContent: 'center', // Center vertically
+    justifyContent: 'flex-start', // Start from the top
     minHeight: '100vh', // Full viewport height
     textAlign: 'center', // Center text
+    padding: '20px', // Add padding
+  },
+  title: {
+    fontSize: '36px',
+    marginBottom: '20px',
   },
   form: {
     display: 'flex',
@@ -123,6 +135,20 @@ const styles = {
   },
   results: {
     marginTop: '20px',
+  },
+  footer: {
+    marginTop: 'auto', // Pushes footer to the bottom
+    fontSize: '14px',
+    marginBottom: 'auto',
+    display: 'flex', // Use flexbox to align items
+    alignItems: 'center', // Center items vertically
+    flexDirection: 'column'
+  },
+  logo: {
+    width: '80px', // Adjust size as needed
+    height: '80px',
+    borderRadius: '50%', // Make the image round
+    marginRight: '10px', // Space between image and text
   },
 };
 
