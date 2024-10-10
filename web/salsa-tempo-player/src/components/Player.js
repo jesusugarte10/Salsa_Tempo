@@ -1,69 +1,99 @@
 import React, { useState, useEffect } from 'react';
-import { streamAudio } from '../utils/audioHelper';
-import { getRandomSalsaFigure } from '../utils/salsaFigures';
-import YouTubeSearch from './YouTubeSearch'; // Import the YouTube search component
-import { announceAndDisplayFigure } from './FigureAnnouncer'; // Import the announcer function
+import axios from 'axios';
 
 const Player = () => {
-  const [audioContext] = useState(new (window.AudioContext || window.webkitAudioContext)());
-  const [audioBuffer, setAudioBuffer] = useState(null);
-  const [currentGroup, setCurrentGroup] = useState('Arriba'); // Salsa figure group
-  const [figure, setFigure] = useState(null);
-  const [videoId, setVideoId] = useState(''); // State to hold the selected video ID
-
-  const onVideoSelect = (selectedVideoId) => {
-    setVideoId(selectedVideoId);
-    // Here you can implement the logic to stream audio from the selected video
-  };
+  const [accessToken, setAccessToken] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [tracks, setTracks] = useState([]);
+  const [selectedTrack, setSelectedTrack] = useState(null);
 
   useEffect(() => {
-    const loadAudio = async () => {
-      if (videoId) {
-        const audioUrl = `https://www.youtube.com/watch?v=${videoId}`; // Construct the URL for audio streaming
-        const buffer = await streamAudio(audioUrl, audioContext, setAudioBuffer);
-        if (buffer) {
-          console.log('Audio buffered and ready to play');
-        }
-      }
-    };
-
-    loadAudio();
-
-    return () => {
-      audioContext.close();
-    };
-  }, [videoId, audioContext]);
-
-  useEffect(() => {
-    // Announce and display the random salsa figure every time it's updated
-    if (figure) {
-      console.log(`Next salsa figure: ${figure.name}`);
-      announceAndDisplayFigure(figure.name); // Announce and display figure
+    // Retrieve the access token from local storage
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      setAccessToken(token);
     }
-  }, [figure]);
+  }, []);
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    if (!searchTerm || !accessToken) return;
+
+    try {
+      const response = await axios.get('https://api.spotify.com/v1/search', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        params: {
+          q: searchTerm,
+          type: 'track',
+          limit: 5, // Limit the number of results
+        },
+      });
+
+      const trackResults = response.data.tracks.items;
+      setTracks(trackResults);
+      if (trackResults.length > 0) {
+        setSelectedTrack(trackResults[0]); // Automatically select the first track
+      }
+    } catch (error) {
+      console.error('Error searching for tracks:', error);
+    }
+  };
 
   const playAudio = () => {
-    if (audioBuffer) {
-      const source = audioContext.createBufferSource();
-      source.buffer = audioBuffer;
-      source.connect(audioContext.destination);
-      source.start(0);
-      announceRandomFigure(); // Announce a salsa figure
+    if (selectedTrack) {
+      // Here you would implement the logic to play the audio
+      console.log(`Playing audio for: ${selectedTrack.name}`);
+      // Optionally, implement logic to play the track using the Spotify Web Playback SDK
     }
-  };
-
-  const announceRandomFigure = () => {
-    const randomFigure = getRandomSalsaFigure(currentGroup);
-    setFigure(randomFigure);
-    // Switch salsa figure group after every announcement
-    setCurrentGroup(currentGroup === 'Arriba' ? 'Guapea' : 'Arriba');
   };
 
   return (
     <div>
-      <YouTubeSearch onVideoSelect={onVideoSelect} /> {/* Include the YouTube search component */}
-      <button onClick={playAudio}>Play Audio</button>
-      {figure && <p id="figure-display">Current Figure: {figure.name}</p>} {/* Display current figure */}
+      <form onSubmit={handleSearch}>
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Search Spotify"
+        />
+        <button type="submit">Search on Spotify</button>
+      </form>
+
+      {tracks.length > 0 && (
+        <div>
+          <h3>Search Results:</h3>
+          <ul style={{ listStyleType: 'none', padding: 0 }}> {/* Remove bullets and padding */}
+            {tracks.map((track) => (
+              <li
+                key={track.id}
+                onClick={() => setSelectedTrack(track)}
+                style={{ display: 'flex', alignItems: 'center', marginBottom: '10px', cursor: 'pointer' }} // Flex for better layout
+              >
+                <img src={track.album.images[0].url} alt={track.name} style={{ width: '50px', height: '50px', marginRight: '10px' }} /> {/* Thumbnail */}
+                <span style={{ fontWeight: 'bold', fontSize: '18px' }}>{track.name}</span> {/* Increased font size for track name */}
+                <span style={{ marginLeft: '5px', fontSize: '16px' }}>by {track.artists[0].name}</span> {/* Increased font size for artist name */}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {selectedTrack && (
+        <div style={{ textAlign: 'center', marginTop: '20px' }}>
+          <img 
+            src={selectedTrack.album.images[0].url} 
+            alt={selectedTrack.name} 
+            style={{ width: '200px', height: '200px', objectFit: 'cover' }} // Large image
+          />
+          <div style={{ marginTop: '10px', fontSize: '14px' }}> {/* Smaller font size for text */}
+            <p style={{ fontSize: '18px', fontWeight: 'bold' }}>{selectedTrack.name}</p> {/* Bold and larger track name */}
+            <p style={{ fontSize: '16px' }}>{selectedTrack.artists[0].name}</p> {/* Larger artist name */}
+          </div>
+          <button onClick={playAudio}>Play Audio</button>
+        </div>
+      )}
     </div>
   );
 };

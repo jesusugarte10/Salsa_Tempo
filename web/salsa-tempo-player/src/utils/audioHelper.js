@@ -1,24 +1,23 @@
-import axios from 'axios';
-
-// Function to stream audio and buffer it locally in memory while playing
-export const streamAudio = async (url, audioContext, onBuffer) => {
+// utils/audioHelper.js
+export const streamAudio = async (audioUrl, audioContext, setAudioBuffer) => {
   try {
-    const response = await axios({
-      method: 'get',
-      url: url,
-      responseType: 'arraybuffer', // Streaming audio as arraybuffer
+    const response = await fetch(audioUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
 
-    // Decode the audio data to buffer it temporarily in the AudioContext
-    const audioBuffer = await audioContext.decodeAudioData(response.data);
-
-    if (onBuffer) {
-      onBuffer(audioBuffer);
+    if (!response.ok) {
+      throw new Error('Failed to fetch audio');
     }
-    
-    return audioBuffer;
+
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = await audioContext.decodeAudioData(arrayBuffer);
+    setAudioBuffer(buffer); // Set the audio buffer state
+    return buffer; // Return the buffer
   } catch (error) {
     console.error('Error streaming audio:', error);
-    return null;
+    return null; // Return null in case of error
   }
 };
