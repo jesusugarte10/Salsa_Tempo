@@ -50,19 +50,20 @@ const Player = () => {
   };
 
   return (
-    <div>
-      <form onSubmit={handleSearch}>
+    <div style={styles.container}>
+      <form onSubmit={handleSearch} style={styles.form}>
         <input
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Search Spotify"
+          style={styles.input}
         />
-        <button type="submit">Search on Spotify</button>
+        <button type="submit" style={styles.button}>Search</button>
       </form>
 
       {tracks.length > 0 && (
-        <div>
+        <div style={styles.results}>
           <h3>Search Results:</h3>
           <ul style={{ listStyleType: 'none', padding: 0 }}> {/* Remove bullets and padding */}
             {tracks.map((track) => (
@@ -96,6 +97,33 @@ const Player = () => {
       )}
     </div>
   );
+};
+
+const styles = {
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center', // Center horizontally
+    justifyContent: 'center', // Center vertically
+    minHeight: '100vh', // Full viewport height
+    textAlign: 'center', // Center text
+  },
+  form: {
+    display: 'flex',
+    marginBottom: '20px',
+  },
+  input: {
+    padding: '10px',
+    fontSize: '16px',
+    marginRight: '10px',
+  },
+  button: {
+    padding: '10px',
+    fontSize: '16px',
+  },
+  results: {
+    marginTop: '20px',
+  },
 };
 
 export default Player;
