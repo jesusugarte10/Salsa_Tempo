@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 const Player = () => {
+  const navigate = useNavigate(); // Initialize useNavigate
   const [accessToken, setAccessToken] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [tracks, setTracks] = useState([]);
@@ -80,7 +82,14 @@ const Player = () => {
 
   const handleSearch = async (e) => {
     e.preventDefault();
-    if (!searchTerm || !accessToken) return;
+    if (!accessToken){
+      navigate('/'); // Redirect to SpotifyAuth if accessToken is missing
+      return;
+    } 
+    else if (!searchTerm ){
+      //Do Nothing
+      return;
+    } 
 
     try {
       const response = await axios.get('https://api.spotify.com/v1/search', {
@@ -210,7 +219,6 @@ const styles = {
     marginBottom: '20px',
   },
   form: {
-    display: 'flex',
     marginBottom: '20px',
   },
   input: {
