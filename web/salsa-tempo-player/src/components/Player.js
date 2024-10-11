@@ -21,7 +21,7 @@ const Player = () => {
     const playerInstance = new window.Spotify.Player({
       name: 'Salsa Rueda App Player',
       getOAuthToken: (cb) => { cb(accessToken); },
-      volume: 0.5,
+      volume: 1,
     });
 
     playerInstance.connect();
@@ -149,11 +149,22 @@ const Player = () => {
               <li
                 key={track.id}
                 onClick={() => setSelectedTrack(track)}
-                style={{ display: 'flex', alignItems: 'center', marginBottom: '10px', cursor: 'pointer' }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  marginBottom: '10px',
+                  cursor: 'pointer',
+                  padding: '10px',
+                  borderRadius: '5px',
+                  backgroundColor: selectedTrack?.id === track.id ? '#e0f7fa' : '#ffffff',
+                  transition: 'background-color 0.3s',
+                }}
               >
-                <img src={track.album.images[0].url} alt={track.name} style={{ width: '50px', height: '50px', marginRight: '10px' }} />
-                <span style={{ fontWeight: 'bold', fontSize: '18px' }}>{track.name}</span>
-                <span style={{ marginLeft: '5px', fontSize: '16px' }}>by {track.artists[0].name}</span>
+                <img src={track.album.images[0].url} alt={track.name} style={{ width: '80px', height: '80px', marginRight: '10px', borderRadius: '5px' }} />
+                <div style={{ flex: 1, textAlign: 'left' }}>
+                  <span style={{ fontWeight: 'bold', fontSize: '18px' }}>{track.name}</span>
+                  <span style={{ marginLeft: '5px', fontSize: '16px', color: '#555' }}>by {track.artists[0].name}</span>
+                </div>
               </li>
             ))}
           </ul>
@@ -165,19 +176,19 @@ const Player = () => {
           <img 
             src={selectedTrack.album.images[0].url} 
             alt={selectedTrack.name} 
-            style={{ width: '200px', height: '200px', objectFit: 'cover' }} 
+            style={{ width: '200px', height: '200px', objectFit: 'cover', borderRadius: '10px', boxShadow: '0 4px 10px rgba(0, 0, 0, 0.2)' }} 
           />
           <div style={{ marginTop: '10px', fontSize: '14px' }}>
             <p style={{ fontSize: '18px', fontWeight: 'bold' }}>{selectedTrack.name}</p>
-            <p style={{ fontSize: '16px' }}>{selectedTrack.artists[0].name}</p>
+            <p style={{ fontSize: '16px', color: '#555' }}>{selectedTrack.artists[0].name}</p>
           </div>
-          <button onClick={playAudio}>Play Audio</button>
+          <button onClick={playAudio} style={styles.button}>Play Audio</button>
         </div>
       )}
 
       <footer style={styles.footer}>
         <img src="https://avatars.githubusercontent.com/u/19676534?v=4" alt="Logo" style={styles.logo} />
-        <span>Made with Love by Jesus Ugarte</span>
+        <span style={{ color: '#777' }}>Made with ❤️ by Jesus Ugarte</span>
       </footer>
     </div>
   );
@@ -192,6 +203,7 @@ const styles = {
     minHeight: '100vh',
     textAlign: 'center',
     padding: '20px',
+    backgroundColor: '#f9f9f9',
   },
   title: {
     fontSize: '36px',
@@ -204,28 +216,42 @@ const styles = {
   input: {
     padding: '10px',
     fontSize: '16px',
+    borderRadius: '5px',
+    border: '1px solid #ddd',
     marginRight: '10px',
+    width: '300px',
   },
   button: {
-    padding: '10px',
+    padding: '10px 15px',
     fontSize: '16px',
+    borderRadius: '5px',
+    backgroundColor: '#1db954',
+    color: '#ffffff',
+    border: 'none',
+    cursor: 'pointer',
+    transition: 'background-color 0.3s',
   },
   results: {
-    marginTop: '20px',
+    textAlign: 'left',
+    width: '100%',
+    maxWidth: '600px',
+    margin: '0 auto',
   },
   footer: {
     marginTop: 'auto',
-    fontSize: '14px',
+    padding: '20px',
+    borderTop: '1px solid #ddd',
     marginBottom: 'auto',
     display: 'flex',
     alignItems: 'center',
+    justifyContent: 'center',
     flexDirection: 'column',
   },
   logo: {
-    width: '80px',
-    height: '80px',
+    width: '50px',
+    height: '50px',
     borderRadius: '50%',
-    marginRight: '10px',
+    marginBottom: '10px',
   },
 };
 
