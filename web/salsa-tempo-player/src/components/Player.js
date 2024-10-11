@@ -10,6 +10,8 @@ const Player = () => {
   const [selectedTrack, setSelectedTrack] = useState(null);
   const [player, setPlayer] = useState(null);
   const [isReady, setIsReady] = useState(false);
+  const [deviceId, setDeviceId] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false); // Track playing state
 
   useEffect(() => {
     // Retrieve the access token from local storage
@@ -30,6 +32,7 @@ const Player = () => {
 
     playerInstance.on('ready', ({ device_id }) => {
       console.log('Ready with Device ID', device_id);
+      setDeviceId(device_id); // Store the device ID in state
       setPlayer(playerInstance);
       setIsReady(true);
     });
@@ -61,24 +64,33 @@ const Player = () => {
 
   useEffect(() => {
     if (!accessToken) return; // Don't run if there is no access token
-
+  
     // Define the onSpotifyWebPlaybackSDKReady function
     window.onSpotifyWebPlaybackSDKReady = () => {
       initPlayer();
     };
-
+  
     // Load the Spotify SDK
     const loadSpotifySDK = () => {
       const script = document.createElement('script');
       script.src = "https://sdk.scdn.co/spotify-player.js";
+      script.async = true;
+      script.defer = true;
+  
+      script.onload = () => {
+        console.log('Spotify SDK loaded');
+        initPlayer(); // Initialize the player after the SDK is loaded
+      };
+  
       script.onerror = (error) => {
         console.error('Failed to load Spotify SDK:', error);
       };
+  
       document.body.appendChild(script);
     };
-
+  
     loadSpotifySDK();
-  }, [accessToken, initPlayer]); // Include initPlayer in the dependency array
+  }, [accessToken, initPlayer]); // Ensure initPlayer is in the dependency array
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -103,6 +115,8 @@ const Player = () => {
         },
       });
 
+
+
       const trackResults = response.data.tracks.items;
       setTracks(trackResults);
       if (trackResults.length > 0) {
@@ -111,29 +125,75 @@ const Player = () => {
       }
     } catch (error) {
       console.error('Error searching for tracks:', error);
+      // Check if the error is related to authentication (401 or 403)
+      if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+        console.log('Invalid token or session expired, redirecting to login');
+        navigate('/'); // Redirect to the login page
+      }
     }
   };
 
-  const playAudio = () => {
-    console.log('Player Ready:', isReady);
-    console.log('Selected Track:', selectedTrack);
-    console.log('Player Instance:', player); // Log player instance for debugging
 
-    if (isReady && selectedTrack) {
-      player.resume().then(() => {
-        console.log(`Playing audio for: ${selectedTrack.name}`);
-        player.play({
-          uris: [`spotify:track:${selectedTrack.id}`],
-        }).catch(error => {
-          console.error('Error playing audio:', error);
-        });
-      }).catch(error => {
-        console.error('Error resuming playback:', error);
-      });
+const playAudio = async () => {
+
+  // Ensure the player is connected
+  if (!player?.connected) {
+    console.log('Player not connected. Attempting to connect...');
+    if(accessToken){
+      await player.connect();
+    }
+    else{
+      console.error('Failed to connect the player');
+      return;
+    }
+  }
+
+  const currentDeviceId = deviceId || player._options.id; // Fallback to player._options.id
+
+  if (!isReady || !selectedTrack || !currentDeviceId) {
+    console.error('Player is not ready, no track selected, or device ID is missing');
+    return;
+  }
+
+  try {
+    // Get the current playback state to determine if the track is already playing
+    const state = await player.getCurrentState();
+
+    if (!state || !state.paused) {
+      // If the state is undefined or the track is playing, pause the track
+      await axios.put(
+        `https://api.spotify.com/v1/me/player/pause?device_id=${currentDeviceId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      console.log('Audio paused');
+      setIsPlaying(false); // Update the state to show it's paused
     } else {
-      console.error('Player is not ready or no track selected');
+      // If the track is paused or no state exists, start playing the track
+      await axios.put(
+        `https://api.spotify.com/v1/me/player/play?device_id=${currentDeviceId}`,
+        {
+          uris: [selectedTrack.uri],
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      console.log(`Playing audio for: ${selectedTrack.name}`);
+      setIsPlaying(true); 
     }
-  };
+  } catch (error) {
+    console.error('Error toggling audio:', error);
+  }
+};
+  
+  
 
   return (
     <div style={styles.container}>
@@ -191,7 +251,7 @@ const Player = () => {
             <p style={{ fontSize: '18px', fontWeight: 'bold' }}>{selectedTrack.name}</p>
             <p style={{ fontSize: '16px', color: '#555' }}>{selectedTrack.artists[0].name}</p>
           </div>
-          <button onClick={playAudio} style={styles.button}>Play Audio</button>
+          <button onClick={playAudio} style={{...styles.button, backgroundColor: isPlaying ? 'red' : '#1db954',}}> {isPlaying ? 'Pause Audio' : 'Play Audio'} {/* Change button label based on state */}</button>
         </div>
       )}
 
