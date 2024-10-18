@@ -12,6 +12,8 @@ const Player = () => {
   const [isReady, setIsReady] = useState(false);
   const [deviceId, setDeviceId] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false); // Track playing state
+  const [userProfile, setUserProfile] = useState(null); // State to store user profile
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     // Retrieve the access token from local storage
@@ -20,6 +22,26 @@ const Player = () => {
       setAccessToken(token);
     }
   }, []);
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!accessToken) return; // Exit if no access token
+
+      try {
+        const response = await axios.get('https://api.spotify.com/v1/me', {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+        
+        setUserProfile(response.data); // Store user profile data
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+      }
+    };
+
+  fetchUserProfile();
+}, [accessToken]); // Runs when accessToken is available
 
   const initPlayer = useCallback(() => {
     const playerInstance = new window.Spotify.Player({
@@ -133,70 +155,92 @@ const Player = () => {
     }
   };
 
+  const handleLogout = () => {
+    // Clear access token from local storage and state
+    localStorage.removeItem('access_token');
+    setAccessToken('');
+    
+    // Redirect to login or home page
+    navigate('/');
+  };
 
-const playAudio = async () => {
-
-  // Ensure the player is connected
-  if (!player?.connected) {
-    console.log('Player not connected. Attempting to connect...');
-    if(accessToken){
-      await player.connect();
-    }
-    else{
-      console.error('Failed to connect the player');
+  const playAudio = async () => {
+    // Ensure the player is ready, a track is selected, and the device ID is available
+    if (!isReady) {
+      console.error('Player is not ready');
       return;
     }
-  }
-
-  const currentDeviceId = deviceId || player._options.id; // Fallback to player._options.id
-
-  if (!isReady || !selectedTrack || !currentDeviceId) {
-    console.error('Player is not ready, no track selected, or device ID is missing');
-    return;
-  }
-
-  try {
-    // Get the current playback state to determine if the track is already playing
-    const state = await player.getCurrentState();
-
-    if (!state || !state.paused) {
-      // If the state is undefined or the track is playing, pause the track
-      await axios.put(
-        `https://api.spotify.com/v1/me/player/pause?device_id=${currentDeviceId}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      console.log('Audio paused');
-      setIsPlaying(false); // Update the state to show it's paused
-    } else {
-      // If the track is paused or no state exists, start playing the track
-      await axios.put(
-        `https://api.spotify.com/v1/me/player/play?device_id=${currentDeviceId}`,
-        {
-          uris: [selectedTrack.uri],
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      console.log(`Playing audio for: ${selectedTrack.name}`);
-      setIsPlaying(true); 
+    
+    if (!selectedTrack) {
+      console.error('No track selected');
+      return;
     }
-  } catch (error) {
-    console.error('Error toggling audio:', error);
-  }
-};
+    
+    if (!deviceId) {
+      console.error('Device ID is missing');
+      return;
+    }
+  
+    try {
+      // Toggle play/pause
+      const currentState = await player.getCurrentState();
+      if (currentState && !currentState.paused) {
+        // Pause the track if it's playing
+        await axios.put(
+          `https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+        console.log('Audio paused');
+        setIsPlaying(false);
+      } else {
+        // Play the track if it's paused
+        await axios.put(
+          `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
+          {
+            uris: [selectedTrack.uri],
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+        console.log(`Playing audio for: ${selectedTrack.name}`);
+        setIsPlaying(true);
+      }
+    } catch (error) {
+      console.error('Error toggling audio:', error);
+    }
+  };
+  
   
   
 
   return (
     <div style={styles.container}>
+      {userProfile && (
+        <div style={styles.profileContainer}>
+          <img
+            src={userProfile.images.length > 0 ? userProfile.images[0].url : 'https://via.placeholder.com/40'}
+            alt="User Profile"
+            style={styles.profilePicture}
+          />
+          <span
+            onClick={handleLogout}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            style={isHovered ? { ...styles.logoutButton, ...styles.logoutButtonHover } : styles.logoutButton}
+          >
+            Log Out
+          </span>
+        </div>
+      )}
+
       <h1 style={styles.title}>Salsa Rueda App</h1>
 
       <form onSubmit={handleSearch} style={styles.form}>
@@ -309,7 +353,7 @@ const styles = {
     marginTop: 'auto',
     padding: '20px',
     borderTop: '1px solid #ddd',
-    marginBottom: 'auto',
+    marginBottom: '20px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -321,6 +365,34 @@ const styles = {
     borderRadius: '50%',
     marginBottom: '10px',
   },
+  profileContainer: {
+    position: 'absolute',
+    top: '10px',
+    right: '10px',
+    display: 'flex',
+    alignItems: 'center',
+  },
+  profilePicture: {
+    width: '40px',
+    height: '40px',
+    borderRadius: '50%',
+    marginRight: '10px',
+  },
+  logoutButton: {
+    fontWeight: 'bold',
+    fontSize: '16px',
+    cursor: 'pointer',
+    color: '#333',
+    padding: '8px 12px',
+    borderRadius: '20px',
+    backgroundColor: '#f2f2f2',
+    transition: 'background-color 0.3s ease, color 0.3s ease',
+  },
+  logoutButtonHover: {
+    backgroundColor: '#e63946',
+    color: '#fff',
+  },
+
 };
 
 export default Player;
