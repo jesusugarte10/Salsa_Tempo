@@ -14,6 +14,8 @@ const Player = () => {
   const [isPlaying, setIsPlaying] = useState(false); // Track playing state
   const [userProfile, setUserProfile] = useState(null); // State to store user profile
   const [isHovered, setIsHovered] = useState(false);
+  const [progress, setProgress] = useState(0); // Progress in percentage
+  const [isSearchVisible, setIsSearchVisible] = useState(true); // State to control search visibility
 
   useEffect(() => {
     // Retrieve the access token from local storage
@@ -80,6 +82,14 @@ const Player = () => {
       console.error('Playback Error:', message);
     });
 
+    // Track playback progress
+    playerInstance.on('player_state_changed', (state) => {
+      if (state) {
+        const { duration, position } = state;
+        setProgress((position / duration) * 100); // Calculate progress in percentage
+      }
+    });
+
     setPlayer(playerInstance); // Ensure player instance is set here as well
 
   }, [accessToken]); // Add accessToken as a dependency
@@ -137,13 +147,12 @@ const Player = () => {
         },
       });
 
-
-
       const trackResults = response.data.tracks.items;
       setTracks(trackResults);
       if (trackResults.length > 0) {
         setSelectedTrack(trackResults[0]); // Automatically select the first track
         setIsReady(true)
+        setIsSearchVisible(true)
       }
     } catch (error) {
       console.error('Error searching for tracks:', error);
@@ -197,6 +206,7 @@ const Player = () => {
         );
         console.log('Audio paused');
         setIsPlaying(false);
+        setIsSearchVisible(true)
       } else {
         // Play the track if it's paused
         await axios.put(
@@ -212,6 +222,7 @@ const Player = () => {
         );
         console.log(`Playing audio for: ${selectedTrack.name}`);
         setIsPlaying(true);
+        setIsSearchVisible(false); // Collapse the search results when playing
       }
     } catch (error) {
       console.error('Error toggling audio:', error);
@@ -243,18 +254,19 @@ const Player = () => {
 
       <h1 style={styles.title}>Salsa Rueda App</h1>
 
-      <form onSubmit={handleSearch} style={styles.form}>
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search Spotify"
-          style={styles.input}
-        />
-        <button type="submit" style={styles.button}>Search</button>
-      </form>
-
-      {tracks.length > 0 && (
+      
+        <form onSubmit={handleSearch} style={styles.form}>
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search Spotify"
+            style={styles.input}
+          />
+          <button type="submit" style={styles.button}>Search</button>
+        </form>
+      
+      {tracks.length > 0 && isSearchVisible && (
         <div style={styles.results}>
           <h3>Search Results:</h3>
           <ul style={{ listStyleType: 'none', padding: 0 }}>
@@ -296,6 +308,17 @@ const Player = () => {
             <p style={{ fontSize: '16px', color: '#555' }}>{selectedTrack.artists[0].name}</p>
           </div>
           <button onClick={playAudio} style={{...styles.button, backgroundColor: isPlaying ? 'red' : '#1db954',}}> {isPlaying ? 'Pause Audio' : 'Play Audio'} {/* Change button label based on state */}</button>
+         {/* Progress Bar */}
+         {isPlaying && (
+            <div style={styles.progressContainer}>
+              <div
+                style={{
+                  ...styles.progressBar,
+                  width: `${progress}%`, // Update the width based on progress
+                }}
+              />
+            </div>
+          )}
         </div>
       )}
 
@@ -328,7 +351,7 @@ const styles = {
   input: {
     padding: '10px',
     fontSize: '16px',
-    borderRadius: '5px',
+    borderRadius: '20px',
     border: '1px solid #ddd',
     marginRight: '10px',
     width: '300px',
@@ -336,7 +359,7 @@ const styles = {
   button: {
     padding: '10px 15px',
     fontSize: '16px',
-    borderRadius: '5px',
+    borderRadius: '20px',
     backgroundColor: '#1db954',
     color: '#ffffff',
     border: 'none',
@@ -353,7 +376,7 @@ const styles = {
     marginTop: 'auto',
     padding: '20px',
     borderTop: '1px solid #ddd',
-    marginBottom: '20px',
+    marginBottom: 'auto',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -391,6 +414,18 @@ const styles = {
   logoutButtonHover: {
     backgroundColor: '#e63946',
     color: '#fff',
+  },
+  progressContainer: {
+    width: '100%',
+    height: '5px',
+    backgroundColor: '#e0e0e0',
+    borderRadius: '3px',
+    marginTop: '10px',
+  },
+  progressBar: {
+    height: '100%',
+    backgroundColor: '#007bff',
+    borderRadius: '3px',
   },
 
 };
