@@ -18,6 +18,7 @@ const Player = () => {
   const [isSearchVisible, setIsSearchVisible] = useState(true); // State to control search visibility
   const [progressInterval, setProgressInterval] = useState(null); // Interval for updating progress
   const [tempo, setTempo] = useState(null); // New state for tempo
+  const [analysisData, setAnalysisData] = useState(null); // For storing audio analysis data
 
   useEffect(() => {
     // Retrieve the access token from local storage
@@ -46,6 +47,32 @@ const Player = () => {
 
   fetchUserProfile();
 }, [accessToken]); // Runs when accessToken is available
+
+const fetchAudioAnalysis = async (trackId) => {
+  try {
+    const response = await axios.get(`https://api.spotify.com/v1/audio-analysis/${trackId}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+     // Fetching detailed audio analysis using the analysis URL
+     const analysisResponse = await axios.get(response.data.analysis_url, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    setAnalysisData(analysisResponse.data); // Store the entire audio analysis data
+    setTempo(analysisResponse.data.track.tempo); // Update the tempo state
+
+    // Log the detailed audio analysis data
+    console.log('Audio Analysis Data:', analysisResponse.data);
+
+  } catch (error) {
+    console.error('Error fetching audio analysis:', error);
+  }
+};
 
   const initPlayer = useCallback(() => {
 
@@ -185,6 +212,7 @@ const Player = () => {
         setSelectedTrack(trackResults[0]); // Automatically select the first track
         setIsReady(true)
         setIsSearchVisible(true)
+        fetchAudioAnalysis(trackResults[0].id); // Fetch audio analysis when a track is selected
       }
     } catch (error) {
       console.error('Error searching for tracks:', error);
@@ -262,14 +290,18 @@ const Player = () => {
         // Start updating progress
         const interval = setInterval(async () => {
           const state = await player.getCurrentState();
-          if (state) {
-            const { duration, position } = state;
-            setProgress((position / duration) * 100);
+          const { duration, position } = state;
+          setProgress((position / duration) * 100);
+
+          // Display real-time beats based on audio analysis
+          const beats = analysisData?.beats || [];
+          const currentBeat = beats.find((beat) => position >= beat.start && position <= beat.start + beat.duration);
+          if (currentBeat) {
+            console.log(`Current Beat: ${currentBeat.start.toFixed(2)}s - ${currentBeat.duration.toFixed(2)}s`);
+          
           }
         }, 500); // Update every half second
-
         setProgressInterval(interval);
-
       }
     } catch (error) {
       console.error('Error toggling audio:', error);
