@@ -53,9 +53,9 @@ const styles = {
     marginBottom: '20px',
   },
   button: {
-    padding: '10px 15px',
+    padding: '20px 45px',
     fontSize: '16px',
-    borderRadius: '5px',
+    borderRadius: '40px',
     backgroundColor: '#1db954',
     color: '#ffffff',
     border: 'none',
@@ -63,7 +63,7 @@ const styles = {
     transition: 'background-color 0.3s',
   },
   footer: {
-    marginTop: 'auto',
+    marginTop: '20px',
     padding: '20px',
     borderTop: '1px solid #ddd',
     marginBottom: 'auto',
