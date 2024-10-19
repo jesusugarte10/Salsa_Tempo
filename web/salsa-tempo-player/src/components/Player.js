@@ -16,6 +16,8 @@ const Player = () => {
   const [isHovered, setIsHovered] = useState(false);
   const [progress, setProgress] = useState(0); // Progress in percentage
   const [isSearchVisible, setIsSearchVisible] = useState(true); // State to control search visibility
+  const [progressInterval, setProgressInterval] = useState(null); // Interval for updating progress
+  const [tempo, setTempo] = useState(null); // New state for tempo
 
   useEffect(() => {
     // Retrieve the access token from local storage
@@ -46,6 +48,32 @@ const Player = () => {
 }, [accessToken]); // Runs when accessToken is available
 
   const initPlayer = useCallback(() => {
+
+    const fetchTrackTempo = (async (trackId) => {
+      try {
+        const response = await axios.get(`https://api.spotify.com/v1/audio-features/${trackId}`, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+
+        // Fetching detailed audio analysis using the analysis URL
+        const analysisResponse = await axios.get(response.data.analysis_url, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+
+        setTempo(analysisResponse.data.track.tempo); // Update the tempo state
+
+        // Log the detailed audio analysis data
+        console.log('Audio Analysis Data:', analysisResponse.data);
+
+      } catch (error) {
+        console.error('Error fetching track tempo:', error);
+      }
+    });
+
     const playerInstance = new window.Spotify.Player({
       name: 'Salsa Rueda App Player',
       getOAuthToken: (cb) => { cb(accessToken); },
@@ -87,12 +115,16 @@ const Player = () => {
       if (state) {
         const { duration, position } = state;
         setProgress((position / duration) * 100); // Calculate progress in percentage
+        // Fetch the tempo when the state changes and the track is playing
+        if (selectedTrack) {
+          fetchTrackTempo(selectedTrack.id);
+        }
       }
     });
 
     setPlayer(playerInstance); // Ensure player instance is set here as well
 
-  }, [accessToken]); // Add accessToken as a dependency
+  }, [accessToken, selectedTrack]); // Add accessToken as a dependency
 
   useEffect(() => {
     if (!accessToken) return; // Don't run if there is no access token
@@ -207,6 +239,8 @@ const Player = () => {
         console.log('Audio paused');
         setIsPlaying(false);
         setIsSearchVisible(true)
+        clearInterval(progressInterval); // Stop updating progress
+
       } else {
         // Play the track if it's paused
         await axios.put(
@@ -223,14 +257,32 @@ const Player = () => {
         console.log(`Playing audio for: ${selectedTrack.name}`);
         setIsPlaying(true);
         setIsSearchVisible(false); // Collapse the search results when playing
+
+
+        // Start updating progress
+        const interval = setInterval(async () => {
+          const state = await player.getCurrentState();
+          if (state) {
+            const { duration, position } = state;
+            setProgress((position / duration) * 100);
+          }
+        }, 500); // Update every half second
+
+        setProgressInterval(interval);
+
       }
     } catch (error) {
       console.error('Error toggling audio:', error);
     }
   };
   
-  
-  
+  // Clean up the interval on component unmount or when playing state changes
+  useEffect(() => {
+    return () => {
+      clearInterval(progressInterval);
+    };
+  }, [progressInterval]);
+
 
   return (
     <div style={styles.container}>
@@ -317,6 +369,8 @@ const Player = () => {
                   width: `${progress}%`, // Update the width based on progress
                 }}
               />
+              {tempo && (<p style={styles.tempoText}>Tempo: {tempo.toFixed(2)} BPM</p> // Display the tempo
+                        )}
             </div>
           )}
         </div>
@@ -424,10 +478,13 @@ const styles = {
   },
   progressBar: {
     height: '100%',
-    backgroundColor: '#007bff',
+    backgroundColor: '#1db954',
     borderRadius: '3px',
   },
-
+  tempoText: {
+    fontSize: '1.2rem',
+    marginTop: '10px',
+  },
 };
 
 export default Player;
