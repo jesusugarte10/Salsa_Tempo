@@ -413,6 +413,7 @@ const styles = {
     border: 'none',
     cursor: 'pointer',
     transition: 'background-color 0.3s',
+    marginBottom:'10px'
   },
   results: {
     textAlign: 'left',
