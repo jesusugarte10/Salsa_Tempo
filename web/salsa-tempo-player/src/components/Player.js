@@ -18,6 +18,7 @@ const Player = () => {
   const [isSearchVisible, setIsSearchVisible] = useState(true); // State to control search visibility
   const [progressInterval, setProgressInterval] = useState(null); // Interval for updating progress
   const [tempo, setTempo] = useState(null); // New state for tempo
+  const [tempoSection, settempoSection] = useState(null); // New state for tempo section
 
   useEffect(() => {
     // Retrieve the access token from local storage
@@ -169,6 +170,54 @@ const Player = () => {
     navigate('/');
   };
 
+  const fetchTrackTempoSection = (async (trackId) => {
+    try {
+      const response = await axios.get(`https://api.spotify.com/v1/audio-features/${trackId}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      // Fetching detailed audio analysis using the analysis URL
+      const analysisResponse = await axios.get(response.data.analysis_url, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      settempoSection(analysisResponse.data.sections)
+    
+    } catch (error) {
+      console.error('Error fetching track tempo:', error);
+    }
+  });
+
+  // Start updating progress
+  const interval = setInterval(async () => {
+    const state = await player.getCurrentState();
+    if (state) {
+      const { duration, position } = state;
+      setProgress((position / duration) * 100);
+      updateTempo(selectedTrack.id)
+    }
+  }, 500); // Update every half second
+
+  const updateTempo = (async (trackId) => {
+    const sections = tempoSection
+    const state = await player.getCurrentState();
+    const progressTime = (state.position/1000);
+
+    // Find the section where progress time fits
+    const currentSection = sections.find(section => {
+      return progressTime >= section.start && progressTime <= (section.start + section.duration);
+    });
+
+    console.log("duration " + state.duration/1000)
+    console.log("progressTime: "+ progressTime)
+
+    setTempo(currentSection ? currentSection.tempo : null)
+  });
+
   const playAudio = async () => {
     // Ensure the player is ready, a track is selected, and the device ID is available
     if (!isReady) {
@@ -200,11 +249,13 @@ const Player = () => {
             },
           }
         );
-        console.log('Audio paused');
-        player.pause()
+        
         setIsPlaying(false);
         setIsSearchVisible(true)
+        settempoSection(null)
         clearInterval(progressInterval); // Stop updating progress
+        player.pause()
+        console.log('Audio paused');
 
       } else {
         // Play the track if it's paused
@@ -219,61 +270,14 @@ const Player = () => {
             },
           }
         );
-        console.log(`Playing audio for: ${selectedTrack.name}`);
-        player.resume()
+        
         setIsPlaying(true);
         setIsSearchVisible(false); // Collapse the search results when playing
-
-        // Start updating progress
-        const interval = setInterval(async () => {
-          const state = await player.getCurrentState();
-          if (state) {
-            const { duration, position } = state;
-            setProgress((position / duration) * 100);
-            fetchTrackTempo(selectedTrack.id)
-          }
-        }, 500); // Update every half second
-
+        await fetchTrackTempoSection(selectedTrack.id) //Populate the fetchTrack Section Once
+        setProgressInterval(interval); //Start Interval Function
+        player.resume()
+        console.log(`Playing audio for: ${selectedTrack.name}`);
         
-        const fetchTrackTempo = (async (trackId) => {
-          try {
-            const response = await axios.get(`https://api.spotify.com/v1/audio-features/${trackId}`, {
-              headers: {
-                Authorization: `Bearer ${accessToken}`,
-              },
-            });
-    
-            // Fetching detailed audio analysis using the analysis URL
-            const analysisResponse = await axios.get(response.data.analysis_url, {
-              headers: {
-                Authorization: `Bearer ${accessToken}`,
-              },
-            });
-    
-            //setTempo(analysisResponse.data.track.tempo); // Update the tempo state
-
-            const sections = analysisResponse.data.sections
-            const state = await player.getCurrentState();
-            const progressTime = (state.position/1000);
-
-            // Find the section where progress time fits
-            const currentSection = sections.find(section => {
-              return progressTime >= section.start && progressTime <= (section.start + section.duration);
-            });
-
-            console.log("duration " + state.duration/1000)
-            console.log("progressTime: "+ progressTime)
-
-            setTempo(currentSection ? currentSection.tempo : null)
-          
-          } catch (error) {
-            console.error('Error fetching track tempo:', error);
-          }
-        });
-
-        //Start Interval Function
-        setProgressInterval(interval);
-
       }
     } catch (error) {
       console.error('Error toggling audio:', error);
