@@ -49,31 +49,6 @@ const Player = () => {
 
   const initPlayer = useCallback(() => {
 
-    const fetchTrackTempo = (async (trackId) => {
-      try {
-        const response = await axios.get(`https://api.spotify.com/v1/audio-features/${trackId}`, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-
-        // Fetching detailed audio analysis using the analysis URL
-        const analysisResponse = await axios.get(response.data.analysis_url, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-
-        setTempo(analysisResponse.data.track.tempo); // Update the tempo state
-
-        // Log the detailed audio analysis data
-        console.log('Audio Analysis Data:', analysisResponse.data);
-
-      } catch (error) {
-        console.error('Error fetching track tempo:', error);
-      }
-    });
-
     const playerInstance = new window.Spotify.Player({
       name: 'Salsa Rueda App Player',
       getOAuthToken: (cb) => { cb(accessToken); },
@@ -110,21 +85,9 @@ const Player = () => {
       console.error('Playback Error:', message);
     });
 
-    // Track playback progress
-    playerInstance.on('player_state_changed', (state) => {
-      if (state) {
-        const { duration, position } = state;
-        setProgress((position / duration) * 100); // Calculate progress in percentage
-        // Fetch the tempo when the state changes and the track is playing
-        if (selectedTrack) {
-          fetchTrackTempo(selectedTrack.id);
-        }
-      }
-    });
-
     setPlayer(playerInstance); // Ensure player instance is set here as well
 
-  }, [accessToken, selectedTrack]); // Add accessToken as a dependency
+  }, [accessToken]); // Add accessToken as a dependency
 
   useEffect(() => {
     if (!accessToken) return; // Don't run if there is no access token
@@ -185,6 +148,7 @@ const Player = () => {
         setSelectedTrack(trackResults[0]); // Automatically select the first track
         setIsReady(true)
         setIsSearchVisible(true)
+        setIsPlaying(false)
       }
     } catch (error) {
       console.error('Error searching for tracks:', error);
@@ -237,6 +201,7 @@ const Player = () => {
           }
         );
         console.log('Audio paused');
+        player.pause()
         setIsPlaying(false);
         setIsSearchVisible(true)
         clearInterval(progressInterval); // Stop updating progress
@@ -255,9 +220,9 @@ const Player = () => {
           }
         );
         console.log(`Playing audio for: ${selectedTrack.name}`);
+        player.resume()
         setIsPlaying(true);
         setIsSearchVisible(false); // Collapse the search results when playing
-
 
         // Start updating progress
         const interval = setInterval(async () => {
@@ -265,9 +230,37 @@ const Player = () => {
           if (state) {
             const { duration, position } = state;
             setProgress((position / duration) * 100);
+            fetchTrackTempo(selectedTrack.id)
           }
         }, 500); // Update every half second
 
+        
+        const fetchTrackTempo = (async (trackId) => {
+          try {
+            const response = await axios.get(`https://api.spotify.com/v1/audio-features/${trackId}`, {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+            });
+    
+            // Fetching detailed audio analysis using the analysis URL
+            const analysisResponse = await axios.get(response.data.analysis_url, {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+            });
+    
+            setTempo(analysisResponse.data.track.tempo); // Update the tempo state
+    
+            // Log the detailed audio analysis data
+            console.log('Audio Analysis Data:', analysisResponse.data.sections);
+    
+          } catch (error) {
+            console.error('Error fetching track tempo:', error);
+          }
+        });
+
+        //Start Interval Function
         setProgressInterval(interval);
 
       }
