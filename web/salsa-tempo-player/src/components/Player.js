@@ -149,7 +149,6 @@ const Player = () => {
         setIsReady(true)
         setIsSearchVisible(true)
         setIsPlaying(false)
-        player.togglePlay()
       }
     } catch (error) {
       console.error('Error searching for tracks:', error);
@@ -309,7 +308,7 @@ const Player = () => {
             placeholder="Search Spotify"
             style={styles.input}
           />
-          <button type="submit" style={styles.button}>Search</button>
+          <button type="submit" style={styles.button} disabled={!searchTerm || isPlaying}>Search</button>
         </form>
       
       {tracks.length > 0 && isSearchVisible && (
