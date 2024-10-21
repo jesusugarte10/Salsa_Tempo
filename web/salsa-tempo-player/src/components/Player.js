@@ -149,6 +149,7 @@ const Player = () => {
         setIsReady(true)
         setIsSearchVisible(true)
         setIsPlaying(false)
+        player.togglePlay()
       }
     } catch (error) {
       console.error('Error searching for tracks:', error);
