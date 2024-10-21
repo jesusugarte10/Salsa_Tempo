@@ -250,11 +250,22 @@ const Player = () => {
               },
             });
     
-            setTempo(analysisResponse.data.track.tempo); // Update the tempo state
-    
-            // Log the detailed audio analysis data
-            console.log('Audio Analysis Data:', analysisResponse.data.sections);
-    
+            //setTempo(analysisResponse.data.track.tempo); // Update the tempo state
+
+            const sections = analysisResponse.data.sections
+            const state = await player.getCurrentState();
+            const progressTime = (state.position/1000);
+
+            // Find the section where progress time fits
+            const currentSection = sections.find(section => {
+              return progressTime >= section.start && progressTime <= (section.start + section.duration);
+            });
+
+            console.log("duration " + state.duration/1000)
+            console.log("progressTime: "+ progressTime)
+
+            setTempo(currentSection ? currentSection.tempo : null)
+          
           } catch (error) {
             console.error('Error fetching track tempo:', error);
           }
