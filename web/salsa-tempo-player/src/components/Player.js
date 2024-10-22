@@ -107,7 +107,6 @@ const Player = () => {
   
       script.onload = () => {
         console.log('Spotify SDK loaded');
-        initPlayer(); // Initialize the player after the SDK is loaded
       };
   
       script.onerror = (error) => {
