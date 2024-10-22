@@ -18,7 +18,6 @@ const Player = () => {
   const [isSearchVisible, setIsSearchVisible] = useState(true); // State to control search visibility
   const [progressInterval, setProgressInterval] = useState(null); // Interval for updating progress
   const [tempo, setTempo] = useState(null); // New state for tempo
-  const [tempoSections, setTempoSections] = useState(null); // New state for tempo
 
   useEffect(() => {
     // Retrieve the access token from local storage
@@ -205,7 +204,6 @@ const Player = () => {
         setIsPlaying(false);
         setIsSearchVisible(true)
         clearInterval(progressInterval); // Stop updating progress
-        setTempoSections(null)
 
       } else {
         // Play the track if it's paused
@@ -226,12 +224,6 @@ const Player = () => {
             Authorization: `Bearer ${accessToken}`,
           },
         });
-      
-        setTempoSections(analysisResponse.data.sections)
-        console.log(`Playing audio for: ${selectedTrack.name}`);
-        player.resume()
-        setIsPlaying(true);
-        setIsSearchVisible(false); // Collapse the search results when playing
 
         // Start updating progress
         const interval = setInterval(async () => {
@@ -250,7 +242,7 @@ const Player = () => {
             const progressTime = (state.position/1000);
 
             // Find the section where progress time fits
-            const currentSection = tempoSections.find(section => {
+            const currentSection =  analysisResponse.data.sections.find(section => {
               return progressTime >= section.start && progressTime <= (section.start + section.duration);
             });
 
@@ -264,9 +256,13 @@ const Player = () => {
           }
         });
 
-        //Start Interval Function
-        setProgressInterval(interval);
 
+        console.log(`Playing audio for: ${selectedTrack.name}`);
+        player.resume()
+        setIsPlaying(true);
+        setIsSearchVisible(false); // Collapse the search results when playing
+        setProgressInterval(interval); //Start Interval Function
+        
       }
     } catch (error) {
       console.error('Error toggling audio:', error);
