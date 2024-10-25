@@ -17,7 +17,7 @@ const Player = () => {
   const [progress, setProgress] = useState(0); // Progress in percentage
   const [isSearchVisible, setIsSearchVisible] = useState(true); // State to control search visibility
   const [progressInterval, setProgressInterval] = useState(null); // Interval for updating progress
-  const [tempo, setTempo] = useState(null); // New state for tempo
+  const [beat, setBeat] = useState(null); // New state for tempo
 
   useEffect(() => {
     // Retrieve the access token from local storage
@@ -219,6 +219,8 @@ const Player = () => {
           }
         );
 
+
+        //Get the Audio Analysis
         const analysisResponse = await axios.get(`https://api.spotify.com/v1/audio-analysis/${selectedTrack.id}`, {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -232,8 +234,23 @@ const Player = () => {
             setProgress((state.position / state.duration) * 100); // For Progress Bar
             fetchTrackTempo()
           }
-        }, 500); // Update every half second
+        }, 1000); // Update every second
 
+        const updateInterval = (newInterval) => {
+          clearInterval(progressInterval); // Clear the current interval
+          const newProgressInterval = setInterval(async () => {
+            const state = await player.getCurrentState();
+            if (state) {
+              setProgress((state.position / state.duration) * 100); // Progress bar update
+              fetchTrackTempo(); // Real-time tempo fetch
+            }
+          }, newInterval); // Set the new interval
+        
+          setProgressInterval(newProgressInterval); // Save new interval
+        };
+
+        // Declare a beat counter outside the function to keep track of the beat across function calls
+        let beatCounter = 1;
         
         const fetchTrackTempo = (async () => {
           try {
@@ -246,10 +263,25 @@ const Player = () => {
               return progressTime >= section.start && progressTime <= (section.start + section.duration);
             });
 
-            console.log("duration " + state.duration/1000)
-            console.log("progressTime: "+ progressTime)
 
-            setTempo(currentSection ? currentSection.tempo : null)
+            console.log(beatCounter);
+
+            // Increment the beat counter and reset to 1 if it reaches 4
+            beatCounter = (beatCounter % 8) + 1;
+            setBeat(beatCounter); // Update the tempo state
+
+          
+            if (currentSection) {
+              const newTempo = currentSection.tempo; // Get the current section's tempo (BPM)
+        
+              // Calculate interval in milliseconds based on tempo (BPM to milliseconds per beat)
+              const newInterval = (60 / newTempo) * 1000 / 2;
+        
+              // If the interval has changed, update the interval dynamically
+              if (progressInterval !== newInterval) {
+                updateInterval(newInterval);
+              }
+            }
           
           } catch (error) {
             console.error('Error fetching track tempo:', error);
@@ -257,7 +289,7 @@ const Player = () => {
         });
 
 
-        console.log(`Playing audio for: ${selectedTrack.name}`);
+        console.log(`Playing audio:  ${selectedTrack.name}`);
         player.resume()
         setIsPlaying(true);
         setIsSearchVisible(false); // Collapse the search results when playing
@@ -362,7 +394,7 @@ const Player = () => {
                   width: `${progress}%`, // Update the width based on progress
                 }}
               />
-              {tempo && (<p style={styles.tempoText}>Tempo: {tempo.toFixed(2)} BPM</p> // Display the tempo
+              {beat && (<p style={styles.tempoText}>BEAT: {beat}</p> // Display the tempo
                         )}
             </div>
           )}
