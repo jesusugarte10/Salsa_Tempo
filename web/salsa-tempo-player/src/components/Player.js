@@ -22,8 +22,7 @@ const Player = () => {
 
   // Using useRef for interval ID
   const progressIntervalRef = useRef(null);
-  const previousIntervalRef = useRef(null);      // Stores the previous interval value for comparison
-  const beatCounterRef = useRef(1);              // Stores the beat counter
+  const previousIntervalRef = useRef(null); // Stores the previous interval value for comparison
   const figureCounterRef = useRef(0);
   const figureTargetRef = useRef(24); //Start at 24 counts
 
@@ -267,17 +266,17 @@ const Player = () => {
               return progressTime >= section.start && progressTime <= (section.start + section.duration);
             });
 
-            // Increment the beat counter and reset to 1 if it reaches 4
-            beatCounterRef.current = (beatCounterRef.current % 8) + 1;
             figureCounterRef.current++;  // Increment total beat counter
-            console.log(beatCounterRef.current);
+            console.log(figureCounterRef.current);
 
-            // Check if we've reached 24 beats
-            if ((figureCounterRef.current % figureTargetRef.current === 0) || (figureTargetRef.current === 0)) {
-              var randomFigure = getRandomSalsaFigure("Guapea")
-              figureTargetRef.current = randomFigure.count;
+            // Check if we've reached the Target Count
+            if (figureCounterRef.current % figureTargetRef.current === 0) {
+              let randomFigure = getRandomSalsaFigure("Guapea")
+              figureTargetRef.current = randomFigure.count + 16; //16 is the Lead Time of wait between figures
+              figureCounterRef.current = 0
               setFigure(randomFigure.name); // Update the tempo state
               console.log(randomFigure.name);
+              console.log("Target: " + figureTargetRef.current)
               const word = new SpeechSynthesisUtterance(randomFigure)
               //word.lang ="es"
               window.speechSynthesis.speak(word)
@@ -288,7 +287,7 @@ const Player = () => {
               const newTempo = currentSection.tempo; // Get the current section's tempo (BPM)
         
               // Calculate interval in milliseconds based on tempo (BPM to milliseconds per beat)
-              const newInterval = (60 / newTempo) * 1000 ;
+              const newInterval = (60 / newTempo) * 1000 / 2;
          
               // If the interval has changed, update the interval dynamically
               if (previousIntervalRef.current !== newInterval) {
@@ -303,8 +302,8 @@ const Player = () => {
 
 
         console.log(`Playing audio:  ${selectedTrack.name}`);
-        beatCounterRef.current = 1
-        figureCounterRef.current = 1
+        figureCounterRef.current = 0
+        figureTargetRef.current = 16 //16 is the Lead Time of wait between figures
         player.resume()
         setIsPlaying(true);
         setIsSearchVisible(false); // Collapse the search results when playing
@@ -388,6 +387,7 @@ const Player = () => {
           </ul>
         </div>
       )}
+
 
       {selectedTrack && (
         <div style={{ textAlign: 'center', marginTop: '20px' }}>
@@ -522,6 +522,7 @@ const styles = {
     height: '100%',
     backgroundColor: '#1db954',
     borderRadius: '3px',
+    marginBottom: "auto"
   },
   tempoText: {
     fontSize: '2rem',
