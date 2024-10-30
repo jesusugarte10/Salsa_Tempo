@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
@@ -16,8 +16,13 @@ const Player = () => {
   const [isHovered, setIsHovered] = useState(false);
   const [progress, setProgress] = useState(0); // Progress in percentage
   const [isSearchVisible, setIsSearchVisible] = useState(true); // State to control search visibility
-  const [progressInterval, setProgressInterval] = useState(null); // Interval for updating progress
   const [beat, setBeat] = useState(null); // New state for tempo
+
+
+  // Using useRef for interval ID
+  const progressIntervalRef = useRef(null);
+  const previousIntervalRef = useRef(null);      // Stores the previous interval value for comparison
+  const beatCounterRef = useRef(1);              // Stores the beat counter
 
   useEffect(() => {
     // Retrieve the access token from local storage
@@ -203,7 +208,7 @@ const Player = () => {
         player.pause()
         setIsPlaying(false);
         setIsSearchVisible(true)
-        clearInterval(progressInterval); // Stop updating progress
+        clearInterval(progressIntervalRef.current);
 
       } else {
         // Play the track if it's paused
@@ -227,30 +232,25 @@ const Player = () => {
           },
         });
 
-        // Start updating progress
-        const interval = setInterval(async () => {
-          const state = await player.getCurrentState();
-          if (state) {
-            setProgress((state.position / state.duration) * 100); // For Progress Bar
-            fetchTrackTempo()
-          }
-        }, 1000); // Update every second
-
         const updateInterval = (newInterval) => {
-          clearInterval(progressInterval); // Clear the current interval
-          const newProgressInterval = setInterval(async () => {
+          // Clear the previous interval
+          if (progressIntervalRef.current) {
+            clearInterval(progressIntervalRef.current);
+          }
+      
+          // Start a new interval
+          progressIntervalRef.current = setInterval(async () => {
             const state = await player.getCurrentState();
             if (state) {
-              setProgress((state.position / state.duration) * 100); // Progress bar update
+              setProgress((state.position / state.duration) * 100);
               fetchTrackTempo(); // Real-time tempo fetch
             }
-          }, newInterval); // Set the new interval
-        
-          setProgressInterval(newProgressInterval); // Save new interval
+          }, newInterval);
+
+          // Update previous interval reference to the new interval
+          previousIntervalRef.current = newInterval;
         };
 
-        // Declare a beat counter outside the function to keep track of the beat across function calls
-        let beatCounter = 1;
         
         const fetchTrackTempo = (async () => {
           try {
@@ -264,21 +264,21 @@ const Player = () => {
             });
 
 
-            console.log(beatCounter);
+            console.log(beatCounterRef.current);
 
             // Increment the beat counter and reset to 1 if it reaches 4
-            beatCounter = (beatCounter % 8) + 1;
-            setBeat(beatCounter); // Update the tempo state
+            beatCounterRef.current = (beatCounterRef.current % 8) + 1;
+            setBeat(beatCounterRef.current); // Update the tempo state
 
           
             if (currentSection) {
               const newTempo = currentSection.tempo; // Get the current section's tempo (BPM)
         
               // Calculate interval in milliseconds based on tempo (BPM to milliseconds per beat)
-              const newInterval = (60 / newTempo) * 1000 / 2;
-        
+              const newInterval = (60 / newTempo) * 1000 ;
+         
               // If the interval has changed, update the interval dynamically
-              if (progressInterval !== newInterval) {
+              if (previousIntervalRef.current !== newInterval) {
                 updateInterval(newInterval);
               }
             }
@@ -290,10 +290,11 @@ const Player = () => {
 
 
         console.log(`Playing audio:  ${selectedTrack.name}`);
+        beatCounterRef.current = 1
         player.resume()
         setIsPlaying(true);
         setIsSearchVisible(false); // Collapse the search results when playing
-        setProgressInterval(interval); //Start Interval Function
+        updateInterval(1000) //Start Interval Function
         
       }
     } catch (error) {
@@ -303,10 +304,11 @@ const Player = () => {
   
   // Clean up the interval on component unmount or when playing state changes
   useEffect(() => {
-    return () => {
-      clearInterval(progressInterval);
-    };
-  }, [progressInterval]);
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+    }
+    return () => clearInterval(progressIntervalRef.current); // Clear interval on unmount
+  }, []);
 
 
   return (
