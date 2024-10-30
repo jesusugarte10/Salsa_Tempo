@@ -17,7 +17,7 @@ const Player = () => {
   const [isHovered, setIsHovered] = useState(false);
   const [progress, setProgress] = useState(0); // Progress in percentage
   const [isSearchVisible, setIsSearchVisible] = useState(true); // State to control search visibility
-  const [figure, setFigure] = useState(null); // New state for tempo
+  const [figure, setFigure] = useState("Tiempo"); // New state for tempo
 
 
   // Using useRef for interval ID
