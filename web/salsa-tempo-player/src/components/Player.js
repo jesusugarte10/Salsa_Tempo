@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import {getRandomSalsaFigure} from "../utils/salsaFigures.js";
 
 const Player = () => {
   const navigate = useNavigate(); // Initialize useNavigate
@@ -16,13 +17,15 @@ const Player = () => {
   const [isHovered, setIsHovered] = useState(false);
   const [progress, setProgress] = useState(0); // Progress in percentage
   const [isSearchVisible, setIsSearchVisible] = useState(true); // State to control search visibility
-  const [beat, setBeat] = useState(null); // New state for tempo
+  const [figure, setFigure] = useState(null); // New state for tempo
 
 
   // Using useRef for interval ID
   const progressIntervalRef = useRef(null);
   const previousIntervalRef = useRef(null);      // Stores the previous interval value for comparison
   const beatCounterRef = useRef(1);              // Stores the beat counter
+  const figureCounterRef = useRef(0);
+  const figureTargetRef = useRef(24); //Start at 24 counts
 
   useEffect(() => {
     // Retrieve the access token from local storage
@@ -206,6 +209,7 @@ const Player = () => {
         );
         console.log('Audio paused');
         player.pause()
+        setFigure(null)
         setIsPlaying(false);
         setIsSearchVisible(true)
         clearInterval(progressIntervalRef.current);
@@ -263,12 +267,21 @@ const Player = () => {
               return progressTime >= section.start && progressTime <= (section.start + section.duration);
             });
 
-
-            console.log(beatCounterRef.current);
-
             // Increment the beat counter and reset to 1 if it reaches 4
             beatCounterRef.current = (beatCounterRef.current % 8) + 1;
-            setBeat(beatCounterRef.current); // Update the tempo state
+            figureCounterRef.current++;  // Increment total beat counter
+            console.log(beatCounterRef.current);
+
+            // Check if we've reached 24 beats
+            if ((figureCounterRef.current % figureTargetRef.current === 0) || (figureTargetRef.current === 0)) {
+              var randomFigure = getRandomSalsaFigure("Guapea")
+              figureTargetRef.current = randomFigure.count;
+              setFigure(randomFigure.name); // Update the tempo state
+              console.log(randomFigure.name);
+              const word = new SpeechSynthesisUtterance(randomFigure)
+              //word.lang ="es"
+              window.speechSynthesis.speak(word)
+            }
 
           
             if (currentSection) {
@@ -291,6 +304,7 @@ const Player = () => {
 
         console.log(`Playing audio:  ${selectedTrack.name}`);
         beatCounterRef.current = 1
+        figureCounterRef.current = 1
         player.resume()
         setIsPlaying(true);
         setIsSearchVisible(false); // Collapse the search results when playing
@@ -396,7 +410,7 @@ const Player = () => {
                   width: `${progress}%`, // Update the width based on progress
                 }}
               />
-              {beat && (<p style={styles.tempoText}>BEAT: {beat}</p> // Display the tempo
+              {figure && (<p style={styles.tempoText}>{figure}</p> // Display the tempo
                         )}
             </div>
           )}
@@ -510,8 +524,9 @@ const styles = {
     borderRadius: '3px',
   },
   tempoText: {
-    fontSize: '1.2rem',
-    marginTop: '10px',
+    fontSize: '2rem',
+    marginTop: '15px',
+    fontWeight: 'bold'
   },
 };
 
