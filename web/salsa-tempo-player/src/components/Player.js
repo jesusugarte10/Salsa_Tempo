@@ -276,9 +276,9 @@ const Player = () => {
               setFigure(randomFigure.name); // Update the tempo state
               console.log(randomFigure.name);
               console.log("Target: " + figureTargetRef.current)
-              const word = new SpeechSynthesisUtterance(randomFigure)
+              //const word = new SpeechSynthesisUtterance(randomFigure)
               //word.lang ="es"
-              window.speechSynthesis.speak(word)
+              //window.speechSynthesis.speak(word)
             }
 
           
@@ -360,7 +360,7 @@ const Player = () => {
         {!tracks.length > 0 &&(
           <div>
             <h3>Rueda Suggestions</h3>
-            <SongRow albumId={"3zfWDEz4pwFQVlVvGZkLEI"} /> 
+            <SongRow albumId="3zfWDEz4pwFQVlVvGZkLEI" setSelectedTrack={setSelectedTrack} isPlaying={isPlaying} /> 
           </div>
         )}
 

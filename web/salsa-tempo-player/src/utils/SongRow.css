@@ -4,6 +4,8 @@
     white-space: nowrap;
     animation: scroll 600s linear infinite; /* 30s for scrolling duration, adjust as needed */
     -webkit-animation: scroll 600s linear infinite;
+    will-change: transform;
+    width: 100%;
   }
   
   .song-item {
@@ -27,12 +29,20 @@
     color: black; /* Adjust text color */
     font-weight: bold;
   }
+
+  .song-item:hover {
+    transform: scale(1.1);
+    transition: transform 0.2s ease-in-out;
+    cursor: pointer;
+  }
   
   @keyframes scroll {
     0% {
+      -webkit-transform: translateX(0px); /* Start off-screen */
       transform: translateX(0px); /* Start off-screen */
     }
     100% {
+      -webkit-transform: translateX(0px); /* Start off-screen */
       transform: translateX(-100%); /* End off-screen */
     }
   }
