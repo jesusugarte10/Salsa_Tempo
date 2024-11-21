@@ -9,7 +9,7 @@ const SongRow = ({ albumId }) => {
     const fetchSongs = async () => {
       try {
         const accessToken = localStorage.getItem('access_token'); // Retrieve Spotify access token
-        const response = await axios.get(`https://api.spotify.com/v1/playlists/${albumId}/tracks?limit=50`, {
+        const response = await axios.get(`https://api.spotify.com/v1/playlists/${albumId}/tracks?limit=30`, {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },

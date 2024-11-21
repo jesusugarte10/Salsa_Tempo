@@ -3,6 +3,7 @@
     overflow: hidden;
     white-space: nowrap;
     animation: scroll 600s linear infinite; /* 30s for scrolling duration, adjust as needed */
+    -webkit-animation: scroll 600s linear infinite;
   }
   
   .song-item {
@@ -29,7 +30,7 @@
   
   @keyframes scroll {
     0% {
-      transform: translateX(20); /* Start off-screen */
+      transform: translateX(0px); /* Start off-screen */
     }
     100% {
       transform: translateX(-100%); /* End off-screen */
