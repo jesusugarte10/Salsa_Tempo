@@ -3,7 +3,9 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 const CLIENT_ID = 'f89b2122149340869ba4c525f0196ca1'; // Replace with your client ID
-const REDIRECT_URI = 'http://localhost:3000'; // Make sure this matches your Spotify app settings
+const REDIRECT_URI = process.env.NODE_ENV === 'development'
+  ? 'http://localhost:3000'
+  : 'https://jesusugarte10.github.io/Salsa_Tempo'; // Production URL
 const SCOPES = 'streaming user-read-email user-read-private';
 
 const SpotifyAuth = () => {
@@ -26,7 +28,7 @@ const SpotifyAuth = () => {
 
   return (
     <div style={styles.container}>
-      <h2 style={styles.title}>Please log in to Spotify</h2>
+      <h2 style={styles.title}>Salsa Rueda App</h2>
       <button onClick={handleLogin} style={styles.button}>Log in with Spotify</button>
       
       <footer style={styles.footer}>
