@@ -355,7 +355,9 @@ const Player = () => {
           />
           <button type="submit" style={styles.button} disabled={!searchTerm || isPlaying}>Search</button>
         </form>
-      
+
+      {/* <SongRow albumId={"4aawyAB9vmqN3uQ7FjRGTy"} /> */}
+
       {tracks.length > 0 && isSearchVisible && (
         <div style={styles.results}>
           <h3>Search Results:</h3>
