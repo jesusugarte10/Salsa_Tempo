@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/Salsa_Tempo/static/css/main.9008ee91.css",
-    "main.js": "/Salsa_Tempo/static/js/main.ede76fcb.js",
+    "main.css": "/Salsa_Tempo/static/css/main.052cc34f.css",
+    "main.js": "/Salsa_Tempo/static/js/main.2a2c10f2.js",
     "index.html": "/Salsa_Tempo/index.html",
-    "main.9008ee91.css.map": "/Salsa_Tempo/static/css/main.9008ee91.css.map",
-    "main.ede76fcb.js.map": "/Salsa_Tempo/static/js/main.ede76fcb.js.map"
+    "main.052cc34f.css.map": "/Salsa_Tempo/static/css/main.052cc34f.css.map",
+    "main.2a2c10f2.js.map": "/Salsa_Tempo/static/js/main.2a2c10f2.js.map"
   },
   "entrypoints": [
-    "static/css/main.9008ee91.css",
-    "static/js/main.ede76fcb.js"
+    "static/css/main.052cc34f.css",
+    "static/js/main.2a2c10f2.js"
   ]
 }
