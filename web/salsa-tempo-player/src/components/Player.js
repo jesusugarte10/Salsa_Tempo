@@ -144,7 +144,7 @@ const Player = () => {
         params: {
           q: searchTerm,
           type: 'track',
-          limit: 1, // Limit the number of results
+          limit: 5, // Limit the number of results
         },
       });
 
@@ -396,9 +396,9 @@ const Player = () => {
             alt={selectedTrack.name} 
             style={{ width: '200px', height: '200px', objectFit: 'cover', borderRadius: '10px', boxShadow: '0 4px 10px rgba(0, 0, 0, 0.2)' }} 
           />
-          <div style={{ marginTop: '10px', fontSize: '14px' }}>
-            <p style={{ fontSize: '18px', fontWeight: 'bold' }}>{selectedTrack.name}</p>
-            <p style={{ fontSize: '16px', color: '#555' }}>{selectedTrack.artists[0].name}</p>
+          <div style={styles.logoField}>
+            <p style={{ fontSize: '18px', fontWeight: 'bold', marginTop:'auto'}}>{selectedTrack.name}</p>
+            <p style={{ fontSize: '16px', color: '#555', marginTop:'auto'}}>{selectedTrack.artists[0].name}</p>
           </div>
           <button onClick={playAudio} style={{...styles.buttonEnd, backgroundColor: isPlaying ? 'red' : '#1db954',}}> {isPlaying ? 'Pause Audio' : 'Play Audio'} {/* Change button label based on state */}</button>
          {/* Progress Bar */}
@@ -444,6 +444,11 @@ const styles = {
     flexDirection: 'column',
     display: 'flex',
     gap: '10px',   
+    alignItems: 'center', 
+  },
+  logoField: {
+    flexDirection: 'column',
+    display: 'flex',
     alignItems: 'center', 
   },
   input: {
