@@ -144,7 +144,7 @@ const Player = () => {
         params: {
           q: searchTerm,
           type: 'track',
-          limit: 5, // Limit the number of results
+          limit: 1, // Limit the number of results
         },
       });
 
