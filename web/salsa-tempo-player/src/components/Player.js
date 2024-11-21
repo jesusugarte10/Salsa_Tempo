@@ -377,7 +377,7 @@ const Player = () => {
                   transition: 'background-color 0.3s',
                 }}
               >
-                <img src={track.album.images[0].url} alt={track.name} style={{ width: '80px', height: '80px', marginRight: '10px', borderRadius: '5px' }} />
+                <img src={track.album.images[0].url} alt={track.name} style={{ width: '60px', height: '60px', marginRight: '10px', borderRadius: '5px' }} />
                 <div style={{ flex: 1, textAlign: 'left' }}>
                   <span style={{ fontWeight: 'bold', fontSize: '18px' }}>{track.name}</span>
                   <span style={{ marginLeft: '5px', fontSize: '16px', color: '#555' }}>by {track.artists[0].name}</span>
