@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import {getRandomSalsaFigure} from "../utils/salsaFigures.js";
+import SongRow from '../utils/SongRow.js';
 
 const Player = () => {
   const navigate = useNavigate(); // Initialize useNavigate
@@ -356,7 +357,12 @@ const Player = () => {
           <button type="submit" style={styles.button} disabled={!searchTerm || isPlaying}>Search</button>
         </form>
 
-      {/* <SongRow albumId={"4aawyAB9vmqN3uQ7FjRGTy"} /> */}
+        {!tracks.length > 0 &&(
+          <div>
+            <h3>Rueda Suggestions</h3>
+            <SongRow albumId={"3zfWDEz4pwFQVlVvGZkLEI"} /> 
+          </div>
+        )}
 
       {tracks.length > 0 && isSearchVisible && (
         <div style={styles.results}>

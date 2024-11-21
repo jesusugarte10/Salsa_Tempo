@@ -2,34 +2,34 @@
     display: flex;
     overflow: hidden;
     white-space: nowrap;
-    animation: scroll 30s linear infinite; /* 30s for scrolling duration, adjust as needed */
+    animation: scroll 600s linear infinite; /* 30s for scrolling duration, adjust as needed */
   }
   
   .song-item {
     display: inline-flex;
     flex-direction: column;
     align-items: center;
-    margin-right: 20px;
-    width: 100px; /* Adjust the size of the logo */
+    width: 180px; /* Adjust the size of the logo */
   }
   
   .song-logo {
-    width: 50px; /* Size of the album logo */
-    height: 50px;
+    width: 150px; /* Size of the album logo */
+    height: 150px;
     object-fit: cover;
     border-radius: 5px;
   }
   
   .song-name {
-    font-size: 12px;
+    font-size: 10px;
     text-align: center;
     margin-top: 5px;
-    color: #fff; /* Adjust text color */
+    color: black; /* Adjust text color */
+    font-weight: bold;
   }
   
   @keyframes scroll {
     0% {
-      transform: translateX(100%); /* Start off-screen */
+      transform: translateX(20); /* Start off-screen */
     }
     100% {
       transform: translateX(-100%); /* End off-screen */

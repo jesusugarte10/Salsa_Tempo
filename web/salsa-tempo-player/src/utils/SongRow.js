@@ -9,7 +9,7 @@ const SongRow = ({ albumId }) => {
     const fetchSongs = async () => {
       try {
         const accessToken = localStorage.getItem('access_token'); // Retrieve Spotify access token
-        const response = await axios.get(`https://api.spotify.com/v1/albums/${albumId}/tracks?limit=20`, {
+        const response = await axios.get(`https://api.spotify.com/v1/playlists/${albumId}/tracks?limit=50`, {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
@@ -29,8 +29,8 @@ const SongRow = ({ albumId }) => {
     <div className="song-row">
       {songs.map((song, index) => (
         <div className="song-item" key={index}>
-          <img src={song.album.images[1].url} alt={song.name} className="song-logo" />
-          <p className="song-name">{song.name}</p>
+          <img src={song.track.album.images[1].url} alt={song.track.name} className="song-logo" />
+          <p className="song-name">{song.track.name}</p>
         </div>
       ))}
     </div>
