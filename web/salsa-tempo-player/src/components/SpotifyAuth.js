@@ -1,5 +1,5 @@
 // src/components/SpotifyAuth.js
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 const CLIENT_ID = 'f89b2122149340869ba4c525f0196ca1'; // Replace with your client ID
@@ -11,19 +11,42 @@ const SCOPES = 'streaming user-read-email user-read-private';
 const SpotifyAuth = () => {
   const navigate = useNavigate(); // Initialize useNavigate
 
-  useEffect(() => {
-    const hash = window.location.hash;
-    if (hash) {
-      const token = hash.split('&')[0].split('=')[1];
-      localStorage.setItem('access_token', token);
-      window.location.hash = ''; // Clear the hash from the URL
-      navigate('/player'); // Navigate to the player screen after retrieving the token
-    }
-  }, [navigate]); // Add navigate to the dependency array
-
   const handleLogin = () => {
     const authUrl = `https://accounts.spotify.com/authorize?response_type=token&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(SCOPES)}`;
-    window.location.href = authUrl; // Redirect to Spotify login
+    
+    // Open the Spotify login URL in a new window
+    const width = 1;
+    const height = 1;
+    const left = window.innerWidth / 2 - width / 2;
+    const top = window.innerHeight / 2 - height / 2;
+    
+    const authWindow = window.open(
+      authUrl,
+      'Spotify Login',
+      `width=${width},height=${height},top=${top},left=${left},resizable,scrollbars`
+    );
+  
+    // Check the new window for the access token
+    const interval = setInterval(() => {
+      try {
+        if (authWindow.closed) {
+          clearInterval(interval); // Stop checking if the window is closed
+          return;
+        }
+  
+        const hash = authWindow.location.hash;
+        if (hash) {
+          const token = hash.split('&')[0].split('=')[1];
+          localStorage.setItem('access_token', token);
+          authWindow.close(); // Close the pop-up window
+          window.location.hash = ''; // Clear the hash from the URL
+          navigate('/player'); // Navigate to the player screen after retrieving the token
+          clearInterval(interval); // Clear the interval
+        }
+      } catch (error) {
+        // Handle any cross-origin issues (the pop-up window is not fully loaded yet)
+      }
+    }, 1000); // Check the pop-up every second for the token
   };
 
   return (
@@ -63,6 +86,7 @@ const styles = {
     border: 'none',
     cursor: 'pointer',
     transition: 'background-color 0.3s',
+    fontWeight: 'bold'
   },
   footer: {
     marginTop: '20px',

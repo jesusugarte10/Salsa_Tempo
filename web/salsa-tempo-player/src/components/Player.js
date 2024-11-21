@@ -170,8 +170,6 @@ const Player = () => {
     // Clear access token from local storage and state
     localStorage.removeItem('access_token');
     setAccessToken('');
-    
-    // Redirect to login or home page
     navigate('/');
   };
 
@@ -352,7 +350,7 @@ const Player = () => {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search Spotify"
+            placeholder="Search a Rueda Song"
             style={styles.input}
           />
           <button type="submit" style={styles.button} disabled={!searchTerm || isPlaying}>Search</button>
@@ -400,7 +398,7 @@ const Player = () => {
             <p style={{ fontSize: '18px', fontWeight: 'bold' }}>{selectedTrack.name}</p>
             <p style={{ fontSize: '16px', color: '#555' }}>{selectedTrack.artists[0].name}</p>
           </div>
-          <button onClick={playAudio} style={{...styles.button, backgroundColor: isPlaying ? 'red' : '#1db954',}}> {isPlaying ? 'Pause Audio' : 'Play Audio'} {/* Change button label based on state */}</button>
+          <button onClick={playAudio} style={{...styles.buttonEnd, backgroundColor: isPlaying ? 'red' : '#1db954',}}> {isPlaying ? 'Pause Audio' : 'Play Audio'} {/* Change button label based on state */}</button>
          {/* Progress Bar */}
          {isPlaying && (
             <div style={styles.progressContainer}>
@@ -441,7 +439,10 @@ const styles = {
     marginBottom: '20px',
   },
   form: {
-    marginBottom: '20px',
+    flexDirection: 'column',
+    display: 'flex',
+    gap: '10px',   
+    alignItems: 'center', 
   },
   input: {
     padding: '10px',
@@ -460,7 +461,20 @@ const styles = {
     border: 'none',
     cursor: 'pointer',
     transition: 'background-color 0.3s',
-    marginBottom:'10px'
+    marginBottom:'10px',
+    width: '30%',  
+    fontWeight: 'bold'
+  },
+  buttonEnd: {
+    padding: '10px 15px',
+    fontSize: '16px',
+    borderRadius: '20px',
+    backgroundColor: '#1db954',
+    color: '#ffffff',
+    border: 'none',
+    cursor: 'pointer',
+    transition: 'background-color 0.3s',
+    marginBottom:'10px',
   },
   results: {
     textAlign: 'left',
@@ -479,8 +493,8 @@ const styles = {
     flexDirection: 'column',
   },
   logo: {
-    width: '50px',
-    height: '50px',
+    width: '30px',
+    height: '30px',
     borderRadius: '50%',
     marginBottom: '10px',
   },
