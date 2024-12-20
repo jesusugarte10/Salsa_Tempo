@@ -6,7 +6,7 @@ const CLIENT_ID = 'f89b2122149340869ba4c525f0196ca1'; // Replace with your clien
 const REDIRECT_URI = process.env.NODE_ENV === 'development'
   ? 'http://localhost:3000'
   : 'https://jesusugarte10.github.io/Salsa_Tempo'; // Production URL
-const SCOPES = 'streaming user-read-email user-read-private';
+const SCOPES = 'streaming';
 
 const SpotifyAuth = () => {
   const navigate = useNavigate(); // Initialize useNavigate
