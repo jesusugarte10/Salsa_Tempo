@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import {getRandomSalsaFigure} from "../utils/salsaFigures.js";
-import SongRow from '../utils/SongRow.js';
+// import SongRow from '../utils/SongRow.js';
 
 const Player = () => {
   const navigate = useNavigate(); // Initialize useNavigate
@@ -357,12 +357,12 @@ const Player = () => {
           <button type="submit" style={styles.button} disabled={!searchTerm || isPlaying}>Search</button>
         </form>
 
-        {!tracks.length > 0 &&(
+        {/* {!tracks.length > 0 &&(
           <div>
             <h3>Rueda Suggestions</h3>
             <SongRow albumId="3zfWDEz4pwFQVlVvGZkLEI" setSelectedTrack={setSelectedTrack} isPlaying={isPlaying} /> 
           </div>
-        )}
+        )} */}
 
       {tracks.length > 0 && isSearchVisible && (
         <div style={styles.results}>
@@ -397,12 +397,15 @@ const Player = () => {
 
       {selectedTrack && (
         <div style={{ textAlign: 'center', marginTop: '20px' }}>
-          <img 
-            src={selectedTrack.album.images[0].url} 
-            alt={selectedTrack.name} 
-            style={{ width: '200px', height: '200px', objectFit: 'cover', borderRadius: '10px', boxShadow: '0 4px 10px rgba(0, 0, 0, 0.2)' }} 
-          />
           <div style={styles.logoField}>
+            <img src={selectedTrack.album.images[0].url} alt={selectedTrack.name} style={{ width: '200px', height: '200px', objectFit: 'cover', borderRadius: '10px', boxShadow: '0 4px 10px rgba(0, 0, 0, 0.2)' }} />
+            <a 
+               href={`https://open.spotify.com/track/${selectedTrack.id}`}
+              target="_blank" 
+              rel="noopener noreferrer" 
+            >
+              <img src={require('../assets/2024-spotify-full-logo/Spotify_Full_Logo_RGB_Black.png')} style={styles.spotifyLogo} alt="Spotify Logo"/>
+            </a>
             <p style={{ fontSize: '18px', fontWeight: 'bold', marginTop:'auto'}}>{selectedTrack.name}</p>
             <p style={{ fontSize: '16px', color: '#555', marginTop:'auto'}}>{selectedTrack.artists[0].name}</p>
           </div>
@@ -556,6 +559,11 @@ const styles = {
     marginTop: '15px',
     fontWeight: 'bold'
   },
+  spotifyLogo: {
+    marginTop: '10px',
+    width: 'auto', 
+    height: '35px', 
+}
 };
 
 export default Player;
