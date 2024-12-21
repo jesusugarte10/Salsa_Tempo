@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/Salsa_Tempo/static/css/main.e6c13ad2.css",
-    "main.js": "/Salsa_Tempo/static/js/main.027986ec.js",
+    "main.js": "/Salsa_Tempo/static/js/main.9cca94cc.js",
     "static/media/Spotify_Full_Logo_RGB_Black.png": "/Salsa_Tempo/static/media/Spotify_Full_Logo_RGB_Black.d6e74125b961b7484c8c.png",
     "index.html": "/Salsa_Tempo/index.html",
     "main.e6c13ad2.css.map": "/Salsa_Tempo/static/css/main.e6c13ad2.css.map",
-    "main.027986ec.js.map": "/Salsa_Tempo/static/js/main.027986ec.js.map"
+    "main.9cca94cc.js.map": "/Salsa_Tempo/static/js/main.9cca94cc.js.map"
   },
   "entrypoints": [
     "static/css/main.e6c13ad2.css",
-    "static/js/main.027986ec.js"
+    "static/js/main.9cca94cc.js"
   ]
 }
