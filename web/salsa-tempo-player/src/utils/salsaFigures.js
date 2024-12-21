@@ -33,11 +33,29 @@ export const salsa_figures = {
     ]
 };
 
+export const switchGroup = (currentGroup) =>{
+    if (currentGroup === "Guapea") {
+        currentGroup = "Arriba";
+        return [{ name: "Dile que no y Arriba", count: 8 }, currentGroup];
+    } else {
+        currentGroup = "Guapea";
+        return { "name": "Dile que no", "count": 8 , "currentGroup": currentGroup};
+    }
+}
+
 export const getRandomSalsaFigure = (currentGroup) => {
     const figures = salsa_figures[currentGroup] || [];
     if (figures.length === 0) {
         console.warn(`No figures found for group: ${currentGroup}`);
         return null;
     }
-    return figures[Math.floor(Math.random() * figures.length)];
+
+    //Change Group Randomness
+    if (Math.random() < (currentGroup === "Arriba" ? 0.7 : 0.005)) {
+        return switchGroup(currentGroup);
+    }
+    else{
+        return { ...figures[Math.floor(Math.random() * figures.length)], "currentGroup": currentGroup };
+    }
+
 };

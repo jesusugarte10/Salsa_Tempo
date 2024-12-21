@@ -26,6 +26,7 @@ const Player = () => {
   const previousIntervalRef = useRef(null); // Stores the previous interval value for comparison
   const figureCounterRef = useRef(0);
   const figureTargetRef = useRef(24); //Start at 24 counts
+  const currentFigureGroupRef = useRef("Arriba"); // New state for tempo
 
   useEffect(() => {
     // Retrieve the access token from local storage
@@ -207,7 +208,8 @@ const Player = () => {
         );
         console.log('Audio paused');
         player.pause()
-        setFigure(null)
+        setFigure("Tiempo")
+        currentFigureGroupRef.current = "Arriba"
         setIsPlaying(false);
         setIsSearchVisible(true)
         clearInterval(progressIntervalRef.current);
@@ -270,9 +272,10 @@ const Player = () => {
 
             // Check if we've reached the Target Count
             if (figureCounterRef.current % figureTargetRef.current === 0) {
-              let randomFigure = getRandomSalsaFigure("Guapea")
+              let randomFigure = getRandomSalsaFigure(currentFigureGroupRef.current); // Get a random figure
               figureTargetRef.current = randomFigure.count + 16; //16 is the Lead Time of wait between figures
               figureCounterRef.current = 0
+              currentFigureGroupRef.current = randomFigure.currentGroup; // Update the tempo state
               setFigure(randomFigure.name); // Update the tempo state
               console.log(randomFigure.name);
               console.log("Target: " + figureTargetRef.current)
